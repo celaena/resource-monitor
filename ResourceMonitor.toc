@@ -1,0 +1,8 @@
+## Interface: 60000
+## Title: Resource Monitor
+## Notes: Visual and aural representation of player resources
+## SavedVariablesPerCharacter: ResMonDB
+
+ResMonMain.lua
+ResMonClassConfig.lua
+ResourceMonitor.lua
