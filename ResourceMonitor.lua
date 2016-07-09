@@ -24,6 +24,31 @@ local maxPower;
 
 local POWER_IND;
 
+local function resetBlipBars()
+	for k,bar in pairs(blipBars) do
+		bar.bgTexture:Hide();
+		for i,blip in ipairs(bar.BLIPS) do
+			blip.bgTexture:Hide();
+		end		
+		bar:UnregisterAllEvents();
+	end
+end
+
+local function configureBlipBars()
+	resetBlipBars();
+	local barSettings = confModule.GetBarConfig();
+	POWER_IND = barSettings.POWER_IND;
+	local maxBlipPower = UnitPowerMax("player", POWER_IND);
+	print("Configure blip bars: " .. maxBlipPower);
+	local activeBar = blipBars[maxBlipPower];
+	activeBar.bgTexture:Show();	
+	ResMon.setBlipConfig(activeBar.BLIPS, barSettings.BLIP_COLORS);
+	activeBar:RegisterUnitEvent("UNIT_POWER", "player");
+	activeBar:RegisterUnitEvent("UNIT_MAXPOWER", "player");
+	activeBar:SetScript("OnEvent", ResMon.powerOnPowerEvent);
+	ResMon.setBlips(activeBar.BLIPS, UnitPower("player", POWER_IND));
+end
+
 function ResMon.OnLoad(self)
 	if (type(ResMonDB) ~= "table") then
 		ResMonDB = {}
@@ -46,36 +71,14 @@ function ResMon.OnLoad(self)
 	ResourceBar:RegisterUnitEvent("UNIT_DISPLAYPOWER", "player");
 	ResourceBar:SetScript("OnEvent", ResMon.resourceBarOnEvent);
 	
-	for k,barConf in pairs(blipBars) do
-		barConf.FRAME.bgTexture:Hide();
-		for i,blip in ipairs(barConf.FRAME.BLIPS) do
-			blip.bgTexture:Hide();
-		end
-	end
+	resetBlipBars();
 end
 
 function ResMon.OnEnterWorld(self)	
-	local barSettings, powerInd = confModule.GetBarConfig();
-	POWER_IND = powerInd;
-	local powerBarCount = 0;
-	blipBars.FIVE_BAR_2.FRAME.bgTexture:Hide();	
-	for j,barSetting in pairs(barSettings) do
-		powerBarCount = powerBarCount + 1;
-		blipBars[j].FRAME.bgTexture:Show();	
-		ResMon.setBlipConfig(blipBars[j].FRAME.BLIPS, barSetting.BLIP_COLORS);
-		if (j == "FIVE_BAR_2") then
-			blipBars.FIVE_BAR_2.FRAME:RegisterUnitEvent("UNIT_AURA", "player");
-			blipBars.FIVE_BAR_2.FRAME:SetScript("OnEvent", ResMon.powerOnAuraEvent);
-			blipBars.FIVE_BAR_2.FRAME.bgTexture:Show();
-		else 			
-			blipBars[j].FRAME:RegisterUnitEvent("UNIT_POWER", "player");
-			blipBars[j].FRAME:SetScript("OnEvent", ResMon.powerOnPowerEvent);
-		end
-	end
-	self:SetHeight(mainModule.mainFrameHeights[powerBarCount + 1]);
-	
 	ResMon.updateHealth();
 	ResMon.updateResource();
+	configureBlipBars();
+	self:SetHeight(mainModule.mainFrameHeights[2]);
 end
 
 -- UNIT_POWER(unit, type)
@@ -115,7 +118,7 @@ function ResMon.updateHealth()
 	else
 		color = mainModule.HEALTH_BAR_COLORS.RED;
 	end
-	HealthBar.olTexture:SetTexture(color.R,color.G,color.B,color.A);
+	HealthBar.olTexture:SetColorTexture(color.R,color.G,color.B,color.A);
 end
 
 function ResMon.resourceBarOnEvent(self, event, unit, ...)
@@ -135,7 +138,7 @@ function ResMon.updateResource()
 	powerType = pt;
 	local barColor = PowerBarColor[pt];
 	-- print("Update resource to " .. typeName .. "(Colors: " .. barColor.r .. ","..barColor.g..","..barColor.b..")");
-	ResourceBar.olTexture:SetTexture(barColor.r,barColor.g,barColor.b,1);
+	ResourceBar.olTexture:SetColorTexture(barColor.r,barColor.g,barColor.b,1);
 	maxPower = UnitPowerMax("player", powerType);
 	ResMon.updateResourceBar();
 end
@@ -153,24 +156,24 @@ end
 
 -- POWER BAR CONTROLLER --
 function ResMon.powerOnPowerEvent(self, event, unit, powType)
-	local thisPwrInd;
-	if (powType == "COMBO_POINTS") then
-		thisPwrInd = 4;
-	else
-		thisPwrInd = _G["SPELL_POWER_"..powType];
+	if (event == "UNIT_POWER") then
+		local thisPwrInd;
+		if (powType == "COMBO_POINTS") then
+			thisPwrInd = 4;
+		else
+			thisPwrInd = _G["SPELL_POWER_"..powType];
+		end
+		if (thisPwrInd == POWER_IND) then		
+			ResMon.setBlips(self.BLIPS, UnitPower("player", POWER_IND));
+		end
+	elseif (event == "UNIT_MAXPOWER") then
+		configureBlipBars();
 	end
-	if (event == "UNIT_POWER" and thisPwrInd == POWER_IND) then		
-		ResMon.setBlips(self.BLIPS, UnitPower("player", POWER_IND));
-	end
-end
-
-function ResMon.powerOnAuraEvent(self, event, ...)
-	ResMon.setBlips(blipBars.FIVE_BAR_2.FRAME.BLIPS, select(4, UnitAura("player", "Anticipation", nil, "PLAYER|HELPFUL")) or 0);
 end
 
 function ResMon.setBlipConfig(blips, blipColors, blipSounds)
 	for i = 1, #blips do
-		blips[i].bgTexture:SetTexture(blipColors[i][1],blipColors[i][2],blipColors[i][3],1);
+		blips[i].bgTexture:SetColorTexture(blipColors[i][1],blipColors[i][2],blipColors[i][3],1);
 		-- set sound?
 	end
 end

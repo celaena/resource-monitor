@@ -6,10 +6,6 @@ local ROGUE = "ROGUE";
 local PALADIN = "PALADIN";
 local PRIEST = "PRIEST";
 
-local THREE_BAR = "THREE_BAR";
-local FIVE_BAR_1 = "FIVE_BAR_1";
-local FIVE_BAR_2 = "FIVE_BAR_2";
-
 local SOUNDS = {
 
 };
@@ -38,7 +34,10 @@ local orangeBar = {
 	COLORS.YEL_ORG,
 	COLORS.ORANGE,
 	COLORS.ORG_RED,
-	COLORS.RED
+	COLORS.RED,
+	COLORS.PURP,
+	COLORS.BLUE_PURP,
+	COLORS.BLUE
 };
 
 local blueBar = {
@@ -80,54 +79,20 @@ local fiveSoundsPt2 = {
 module.BAR_CONFIG = {
 	[ROGUE] = {
 		POWER_IND = 4,
-		DEFAULT = {
-			[FIVE_BAR_1] = {
-				BLIP_COLORS = orangeBar,
-				BLIP_SOUNDS = fiveSounds
-			}
-		},
-		ANT = {
-			[FIVE_BAR_1] = {
-				BLIP_COLORS = orangeBar,
-				BLIP_SOUNDS = fiveSounds
-			},
-			[FIVE_BAR_2] = {
-				BLIP_COLORS = blueBar,
-				BLIP_SOUNDS = fiveSoundsPt2
-			}
-		}
+		BLIP_COLORS = orangeBar,
+		BLIP_SOUNDS = fiveSounds
 	},
 	[PRIEST] = {
 		SHADOW = {
 			POWER_IND = 13,
-			PRE_PERK = {
-				[THREE_BAR] = {
-					BLIP_COLORS = purpleBar,
-					BLIP_SOUNDS = threeSounds
-				}
-			},
-			PERK = {
-				[FIVE_BAR_1] = {
-					BLIP_COLORS = purpleBar,
-					BLIP_SOUNDS = fiveSounds
-				}
-			}
+			BLIP_COLORS = purpleBar,
+			BLIP_SOUNDS = fiveSounds
 		}
 	},
 	[PALADIN] = {
 		POWER_IND = 9,
-		PRE_PERK = {
-			[THREE_BAR] = {
-				BLIP_COLORS = pinkBar,
-				BLIP_SOUNDS = threeSounds
-			}
-		},			
-		PERK = {
-			[FIVE_BAR_1] = {
-				BLIP_COLORS = pinkBar,
-				BLIP_SOUNDS = threeSounds
-			}
-		}
+		BLIP_COLORS = pinkBar,
+		BLIP_SOUNDS = fiveSounds
 	}
 }
 
@@ -136,14 +101,8 @@ module.GetBarConfig = function()
 	local curSpec = GetSpecialization();
 	
 	local barConf = {};
-	local powerInd = -1;
 	if (classFileName == ROGUE) then
-		powerInd = module.BAR_CONFIG[ROGUE].POWER_IND;
-		if (select(2, GetTalentRowSelectionInfo(6)) == 19250) then
-			barConf = module.BAR_CONFIG[ROGUE].ANT;
-		else
-			barConf = module.BAR_CONFIG[ROGUE].DEFAULT;
-		end
+		barConf = module.BAR_CONFIG[ROGUE];
 	elseif (classFileName == PRIEST) then
 		powerInd = module.BAR_CONFIG[PRIEST].SHADOW.POWER_IND;
 		if (curSpec == 3) then
@@ -154,14 +113,7 @@ module.GetBarConfig = function()
 			end
 		end
 	elseif (classFileName == PALADIN) then
-		powerInd = module.BAR_CONFIG[PALADIN].POWER_IND;
-		if (curSpec == 2) then
-			if (UnitPowerMax("player", powerInd) == 5) then
-				barConf = module.BAR_CONFIG[PALADIN].PERK;
-			else
-				barConf = module.BAR_CONFIG[PALADIN].PRE_PERK;
-			end
-		end
+		barConf = module.BAR_CONFIG[PALADIN];		
 	end
-	return barConf, powerInd;
+	return barConf;
 end

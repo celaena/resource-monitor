@@ -56,7 +56,7 @@ module.mainFrameHeights = {
 
 local function generateBackgroundTexture(frame, name, texture)
 	frame.bgTexture = frame:CreateTexture(name, BACKGROUND);
-	frame.bgTexture:SetTexture(texture[1],texture[2],texture[3],texture[4]);
+	frame.bgTexture:SetColorTexture(texture[1],texture[2],texture[3],texture[4]);
 	frame.bgTexture:SetAllPoints();
 end
 
@@ -78,7 +78,7 @@ local function generateBarFrame(mainFrame, ind, name, color)
 	ResourceBar.olTexture = ResourceBar:CreateTexture(name .. "Overlay", OVERLAY);
 	ResourceBar.olTexture:SetSize(width, barHeight);
 	ResourceBar.olTexture:SetPoint("LEFT", ResourceBar, "LEFT", 0, 0);
-	ResourceBar.olTexture:SetTexture(color.R,color.G,color.B,color.A);
+	ResourceBar.olTexture:SetColorTexture(color.R,color.G,color.B,color.A);
 	
 	local ResourceBarTextFrame1 = CreateFrame("Frame", name .. "TextFrame1", ResourceBar);
 	ResourceBarTextFrame1:SetSize(textBoxWidth, barHeight * 0.75);
@@ -112,46 +112,30 @@ module.InitFrames = function(mainFrame)
 	PowerFrame:SetSize(width, powerBarHeight * 2);
 	PowerFrame:EnableMouse(false);
 	
-	local blipBars = {
-		["FIVE_BAR_1"] = {
-			NAME = "ResMonFiveBlipBar1",
-			NUM = 5,
-			OFFSET = 0
-		},
-		["FIVE_BAR_2"] = {
-			NAME = "ResMonFiveBlipBar2",
-			NUM = 5,
-			OFFSET = 1		
-		},
-		["THREE_BAR"] = {
-			NAME = "ResMonThreeBlipBar",
-			NUM = 3,
-			OFFSET = 0		
-		}
-	}
-	
+	local blipBars = {};	
 	local blipHeight = powerBarHeight - (blipBuffer * 2);
-	for k, conf in pairs(blipBars) do
-		local bar = CreateFrame("Frame", conf.NAME, PowerFrame);
+	for j = 3, 8 do 
+		local barName = "ResMonBlipBar" .. j;
+		local bar = CreateFrame("Frame", barName, PowerFrame);
 		bar:SetSize(width, powerBarHeight);
-		bar:SetPoint("TOPLEFT", PowerFrame, "TOPLEFT", 0, powerBarHeight * (conf.OFFSET * -1));	
+		bar:SetPoint("TOPLEFT", PowerFrame, "TOPLEFT", 0, 0);	
 		bar:EnableMouse(false);	
-		generateBackgroundTexture(bar, conf.NAME .. "BG", {0.25,0.25,0.25,1});	
+		generateBackgroundTexture(bar, barName .. "BG", {0.25,0.25,0.25,1});	
 		
 		bar.BLIPS = {};
-		local blipWidth = ((width - (blipBuffer * (conf.NUM + 1))) / conf.NUM);
-		for i = 1, conf.NUM do
-			local blip = CreateFrame("Frame", "ResMon".. conf.NAME .. "PowerBlip" .. i, bar);
+		local blipWidth = ((width - (blipBuffer * (j + 1))) / j);
+		for i = 1, j do
+			local blip = CreateFrame("Frame", "ResMon".. barName .. "PowerBlip" .. i, bar);
 			blip:SetSize(blipWidth, blipHeight);
 			blip:SetPoint("TOPLEFT", bar, "TOPLEFT", (blipWidth * (i - 1)) + (blipBuffer * i), (blipBuffer * -1))
 			blip:EnableMouse(false);
-			blip.bgTexture = blip:CreateTexture("ResMon".. conf.NAME .. "PowerBlip" .. i .."BG", OVERLAY);
-			blip.bgTexture:SetTexture(0,0,0,1);
+			blip.bgTexture = blip:CreateTexture("ResMon".. barName .. "PowerBlip" .. i .."BG", OVERLAY);
+			blip.bgTexture:SetColorTexture(0,0,0,1);
 			blip.bgTexture:SetAllPoints();
 			bar.BLIPS[i] = blip;
 		end
 		
-		conf.FRAME = bar;
+		blipBars[j] = bar;
 	end
 	
 	return HealthBar, ResourceBar, PowerFrame, blipBars;
