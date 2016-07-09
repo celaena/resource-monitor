@@ -41,12 +41,14 @@ local function configureBlipBars()
 	local maxBlipPower = UnitPowerMax("player", POWER_IND);
 	print("Configure blip bars: " .. maxBlipPower);
 	local activeBar = blipBars[maxBlipPower];
-	activeBar.bgTexture:Show();	
-	ResMon.setBlipConfig(activeBar.BLIPS, barSettings.BLIP_COLORS);
-	activeBar:RegisterUnitEvent("UNIT_POWER", "player");
-	activeBar:RegisterUnitEvent("UNIT_MAXPOWER", "player");
-	activeBar:SetScript("OnEvent", ResMon.powerOnPowerEvent);
-	ResMon.setBlips(activeBar.BLIPS, UnitPower("player", POWER_IND));
+	if (activeBar ~= nil) then
+		activeBar.bgTexture:Show();	
+		ResMon.setBlipConfig(activeBar.BLIPS, barSettings.BLIP_COLORS);
+		activeBar:RegisterUnitEvent("UNIT_POWER", "player");
+		activeBar:RegisterUnitEvent("UNIT_MAXPOWER", "player");
+		activeBar:SetScript("OnEvent", ResMon.powerOnPowerEvent);
+		ResMon.setBlips(activeBar.BLIPS, UnitPower("player", POWER_IND));
+	end
 end
 
 function ResMon.OnLoad(self)
@@ -101,7 +103,10 @@ end
 function ResMon.updateHealth()
 	local curHp = UnitHealth("player");
 	local maxHp = UnitHealthMax("player");
-	local percentage = curHp / maxHp;
+	local percentage = 1;
+	if (maxHp > 0) then
+		percentage = curHp / maxHp;
+	end
 	HealthBar.olTexture:SetWidth(percentage * mainModule.width);
 	HealthBar.percentText:SetText((math.floor(percentage * 100)) .. "%");
 	local countStr = curHp .. "/" .. maxHp;
@@ -145,7 +150,10 @@ end
 
 function ResMon.updateResourceBar()
 	local curPower = UnitPower("player", powerType);
-	local percentage = curPower / maxPower;
+	local percentage = 1;
+	if (maxPower > 0) then
+		percentage = curPower / maxPower;
+	end
 	ResourceBar.olTexture:SetWidth(percentage * mainModule.width);
 	ResourceBar.percentText:SetText((math.floor(percentage * 100)) .. "%");
 	local countStr = curPower .. "/" .. maxPower;
