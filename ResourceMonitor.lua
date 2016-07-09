@@ -42,6 +42,7 @@ function ResMon.OnLoad(self)
 	HealthBar:SetScript("OnEvent", ResMon.healthBarOnEvent);
 	
 	ResourceBar:RegisterUnitEvent("UNIT_POWER_FREQUENT", "player");
+	ResourceBar:RegisterUnitEvent("UNIT_MAXPOWER", "player");
 	ResourceBar:RegisterUnitEvent("UNIT_DISPLAYPOWER", "player");
 	ResourceBar:SetScript("OnEvent", ResMon.resourceBarOnEvent);
 	
@@ -57,13 +58,15 @@ function ResMon.OnEnterWorld(self)
 	local barSettings, powerInd = confModule.GetBarConfig();
 	POWER_IND = powerInd;
 	local powerBarCount = 0;
+	blipBars.FIVE_BAR_2.FRAME.bgTexture:Hide();	
 	for j,barSetting in pairs(barSettings) do
 		powerBarCount = powerBarCount + 1;
 		blipBars[j].FRAME.bgTexture:Show();	
-		ResMon.setBlipConfig(blipBars[j].FRAME.BLIPS, barSetting.BLIP_COLORS);	
+		ResMon.setBlipConfig(blipBars[j].FRAME.BLIPS, barSetting.BLIP_COLORS);
 		if (j == "FIVE_BAR_2") then
 			blipBars.FIVE_BAR_2.FRAME:RegisterUnitEvent("UNIT_AURA", "player");
 			blipBars.FIVE_BAR_2.FRAME:SetScript("OnEvent", ResMon.powerOnAuraEvent);
+			blipBars.FIVE_BAR_2.FRAME.bgTexture:Show();
 		else 			
 			blipBars[j].FRAME:RegisterUnitEvent("UNIT_POWER", "player");
 			blipBars[j].FRAME:SetScript("OnEvent", ResMon.powerOnPowerEvent);
@@ -120,7 +123,7 @@ function ResMon.resourceBarOnEvent(self, event, unit, ...)
 		if _G["SPELL_POWER_"..select(1, ...)] == powerType then
 			ResMon.updateResourceBar();
 		end
-	elseif (event == "UNIT_DISPLAYPOWER") then
+	elseif (event == "UNIT_DISPLAYPOWER" or event == "UNIT_MAXPOWER") then
 		ResMon.updateResource();
 	end
 end
@@ -157,7 +160,7 @@ function ResMon.powerOnPowerEvent(self, event, unit, powType)
 		thisPwrInd = _G["SPELL_POWER_"..powType];
 	end
 	if (event == "UNIT_POWER" and thisPwrInd == POWER_IND) then		
-		ResMon.setBlips(blipBars.FIVE_BAR_1.FRAME.BLIPS, UnitPower("player", POWER_IND));
+		ResMon.setBlips(self.BLIPS, UnitPower("player", POWER_IND));
 	end
 end
 
@@ -186,7 +189,7 @@ end
 function ResMon.OnEvent(self, event, ...)
 	if (event == "ADDON_LOADED" and select(1, ...) == "ResourceMonitor") then
 		ResMon.OnLoad(self);	
-	elseif (event == "PLAYER_ENTERING_WORLD") then
+	elseif (event == "PLAYER_ENTERING_WORLD" or event == "PLAYER_TALENT_UPDATE") then
 		ResMon.OnEnterWorld(self);
 	end
 end
@@ -207,4 +210,5 @@ mainFrame:EnableMouse(true);
 mainFrame:SetMovable(true);
 mainFrame:RegisterEvent("ADDON_LOADED");
 mainFrame:RegisterEvent("PLAYER_ENTERING_WORLD");
+mainFrame:RegisterEvent("PLAYER_TALENT_UPDATE");
 mainFrame:SetScript("OnEvent", ResMon.OnEvent);
