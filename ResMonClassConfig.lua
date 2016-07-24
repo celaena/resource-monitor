@@ -5,6 +5,7 @@ ResMon[moduleName] = module;
 local ROGUE = "ROGUE";
 local PALADIN = "PALADIN";
 local PRIEST = "PRIEST";
+local WARLOCK = "WARLOCK";
 
 local SOUNDS = {
 
@@ -93,6 +94,11 @@ module.BAR_CONFIG = {
 		POWER_IND = 9,
 		BLIP_COLORS = pinkBar,
 		BLIP_SOUNDS = fiveSounds
+	},
+	[WARLOCK] = {
+		POWER_IND = 7,
+		BLIP_COLORS = purpleBar,
+		BLIP_SOUNDS = fiveSounds
 	}
 }
 
@@ -113,7 +119,9 @@ module.GetBarConfig = function()
 			end
 		end
 	elseif (classFileName == PALADIN) then
-		barConf = module.BAR_CONFIG[PALADIN];		
+		barConf = module.BAR_CONFIG[PALADIN];	
+	elseif (classFileName == WARLOCK) then
+		barConf = module.BAR_CONFIG[WARLOCK];	
 	end
 	return barConf;
 end
